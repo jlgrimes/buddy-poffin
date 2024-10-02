@@ -14,3 +14,24 @@ export async function fetchAllFeedback() {
   const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false }).returns<Database['public']['Tables']['feedback']['Row'][]>();
   return data;
 }
+
+export async function countUsers() {
+  const supabase = createClient();
+  const { count, error } = await supabase.from('user data').select('*', { count: 'exact', head: true }).returns<Database['public']['Tables']['user data']['Row'][]>();;
+  return count ?? 0;
+}
+
+export async function recentUsers() {
+  const supabase = createClient();
+
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const { count, error } = await supabase
+    .from('user data')
+    .select('*', { count: 'exact', head: true })
+    .gte('last sign in at', oneWeekAgo.toISOString())
+    .returns<Database['public']['Tables']['user data']['Row'][]>();
+
+  return count ?? 0;
+}

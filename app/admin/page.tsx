@@ -1,21 +1,13 @@
 import { redirect } from "next/navigation";
 import { fetchCurrentUser } from "@/components/auth.utils";
 import { isUserAnAdmin } from "@/components/admin/admin.utils";
-import { fetchAllFeedback, fetchCommonlyUsedAvatars } from "@/components/admin/admin.server.utils";
+import { countUsers, fetchAllFeedback, fetchCommonlyUsedAvatars, recentUsers } from "@/components/admin/admin.server.utils";
 import { Label } from "@/components/ui/label";
 import { fetchAvatarImages } from "@/components/avatar/avatar.server.utils";
 import { getMainSelectableAvatars } from "@/components/avatar/avatar.utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { formatDistanceToNowStrict } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge";
 import { FeedbackCard } from "@/components/admin/FeedbackCard";
 
 export default async function AdminPage() {
@@ -31,6 +23,9 @@ export default async function AdminPage() {
 
   const unusedAvatars = getMainSelectableAvatars(allAvatarImages, '').filter((availableAvatar) => !mostCommonlyUsedAvatars?.some(({ avatar }) => avatar === availableAvatar));
 
+  const totalUsers = await countUsers();
+  const recentUsersLastWeek = await recentUsers();
+
   return (
     <div className="flex flex-col py-4 lg:py-8 px-8 lg:px-16 gap-4 w-full h-full">
       <CardTitle>Welcome admin!</CardTitle>
@@ -39,7 +34,9 @@ export default async function AdminPage() {
         <TabsList>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
           <TabsTrigger value="avatars">Avatars</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
+
         <TabsContent value="avatars">
           <>
           <Label>Most commonly used avatars:</Label>
@@ -56,6 +53,7 @@ export default async function AdminPage() {
             {unusedAvatars.map((avatar) => <img className="pixel-image" src={avatar} />)}
           </>
         </TabsContent>
+
         <TabsContent value="feedback">
         <Tabs defaultValue="unresolved">
           <TabsList>
@@ -83,6 +81,12 @@ export default async function AdminPage() {
           </ScrollArea>
           </TabsContent>
         </Tabs>
+        </TabsContent>
+
+        <TabsContent value="users">
+          Total Number of Users: {totalUsers}
+          {/* @TODO: bottom row doesn't work */}
+          Users Who Used App in Last Week: {recentUsersLastWeek}
         </TabsContent>
       </Tabs>
     </div>
