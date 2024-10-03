@@ -3,7 +3,7 @@
 import { Database } from "@/database.types"
 import TournamentRoundList from "../TournamentRoundList";
 import { User } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EditableTournamentArchetype } from "@/components/archetype/AddArchetype/AddTournamentArchetype";
 import { displayTournamentDateRange, getRecord } from "../utils/tournaments.utils";
 import AddTournamentRound from "../AddTournamentRound/AddTournamentRound";
@@ -18,6 +18,7 @@ import { TournamentPlacementBadge } from "../Placement/TournamentPlacementBadge"
 import { preload } from "swr";
 import { USE_LIMITLESS_SPRITES_KEY } from "@/components/archetype/sprites/sprites.constants";
 import { fetchLimitlessSprites } from "@/components/archetype/sprites/sprites.utils";
+import { copyElementScreenshotToClipboard } from "../utils/tournaments.utils";
 
 interface TournamentContainerClientProps {
   tournament: Database['public']['Tables']['tournaments']['Row'];
@@ -31,10 +32,22 @@ export const TournamentContainerClient = (props: TournamentContainerClientProps)
   const [tournamentDate, setTournamentDate] = useState<DateRange>({ from: parseISO( props.tournament.date_from), to: parseISO(props.tournament.date_to) });
   const [tournamentCategory, setTournamentCategory] = useState<TournamentCategory | null>(props.tournament.category as TournamentCategory | null);
   const [tournamentPlacement, setTournamentPlacement] = useState<TournamentPlacement | null>(props.tournament.placement as TournamentPlacement | null);
+  const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     preload(USE_LIMITLESS_SPRITES_KEY, fetchLimitlessSprites);
   }, []);
+
+  const handleScreenshotCopy = async () => {
+    if (captureRef.current) {
+      try {
+        const message = await copyElementScreenshotToClipboard(captureRef.current);
+        alert(message);
+      } catch (error) {
+        alert(`Error: ${error}`);
+      }
+    }
+  };
 
   const updateClientRoundsOnAdd = useCallback((newRound: Database['public']['Tables']['tournament rounds']['Row']) => {
     setRounds([...rounds, newRound]);
@@ -55,7 +68,7 @@ export const TournamentContainerClient = (props: TournamentContainerClientProps)
   }, [setTournamentDate, setTournamentName, setTournamentCategory, setTournamentPlacement]);
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full px-8 py-4 sm:max-w-xl justify-between gap-2">
+    <div ref={captureRef} style={{ padding: '20px', border: '2px solid black' }} className="flex-1 flex flex-col w-full h-full px-8 py-4 sm:max-w-xl justify-between gap-2">
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-4 sm:grid-cols-7 items-center">
           <div className="flex flex-col gap-1 col-span-2 sm:col-span-5">
@@ -89,6 +102,7 @@ export const TournamentContainerClient = (props: TournamentContainerClientProps)
               tournamentId={props.tournament.id}
               tournamentName={tournamentName}
             />
+            <button onClick={handleScreenshotCopy}>Copy Screenshot to Clipboard</button>
           </div>
         )
       }

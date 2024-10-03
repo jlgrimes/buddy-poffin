@@ -1,6 +1,8 @@
-import { Database } from "@/database.types";
+'use client';
+
 import { format, parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
+import html2canvas from 'html2canvas';
 
 export const getRecord = (rounds: { result: string[] }[]) => {
   const record = {
@@ -55,3 +57,45 @@ export const displayTournamentDateRange = (range: DateRange) => {
   
   return `${format(fromDate, "LLLL d")}-${format(toDate, "LLLL d, yyyy")}`;
 }
+
+
+export const copyElementScreenshotToClipboard = async (element: HTMLElement | null): Promise<string> => {
+  if (!element) {
+    throw new Error("No element provided to capture.");
+  }
+
+  if (typeof ClipboardItem === "undefined") {
+    throw new Error("ClipboardItem API is not supported in your browser.");
+  }
+
+  console.log("Element found for capture:", element);
+
+  try {
+    const canvas = await html2canvas(element);
+    console.log("Canvas created successfully.");
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob: Blob | null) => {
+        if (!blob) {
+          console.error("Failed to convert canvas to Blob.");
+          reject("Failed to convert canvas to Blob.");
+          return;
+        }
+
+        const item = new ClipboardItem({ 'image/png': blob });
+        navigator.clipboard.write([item]).then(
+          () => {
+            console.log("Screenshot copied to clipboard successfully!")
+            resolve("Screenshot copied to clipboard!")},
+          (err) => {
+            console.error(`Failed to copy screenshot to clipboard: ${err}`);
+            reject(`Failed to copy screenshot: ${err}`);
+          }
+        );
+      });
+    });
+  } catch (err) {
+    console.error("Error capturing the screenshot: ", err);
+    throw err;
+  }
+};
