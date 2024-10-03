@@ -68,7 +68,7 @@ export const TournamentContainerClient = (props: TournamentContainerClientProps)
   }, [setTournamentDate, setTournamentName, setTournamentCategory, setTournamentPlacement]);
 
   return (
-    <div ref={captureRef} style={{ padding: '20px', border: '2px solid black' }} className="flex-1 flex flex-col w-full h-full px-8 py-4 sm:max-w-xl justify-between gap-2">
+    <div ref={captureRef} style={{ padding: '20px' }} className="flex-1 flex flex-col w-full h-full px-8 py-4 sm:max-w-xl justify-between gap-2">
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-4 sm:grid-cols-7 items-center">
           <div className="flex flex-col gap-1 col-span-2 sm:col-span-5">
